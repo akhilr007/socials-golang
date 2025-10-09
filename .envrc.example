@@ -1,0 +1,4 @@
+# .envrc.example
+
+# The address the app should listen on — usually ":8080" for local dev
+export ADDR = "YOUR_LOCAL_DEV_PORT"
