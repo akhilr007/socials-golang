@@ -19,9 +19,7 @@ type postgresStorage struct {
 
 func NewPostgresStorage(db *sql.DB) Storage {
 	return &postgresStorage{
-		db:             db,
-		userRepository: newUserRepositoryPG(db),
-		postRepository: newPostRepositoryPG(db),
+		db: db,
 	}
 }
 
