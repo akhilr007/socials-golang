@@ -2,3 +2,4 @@
 
 # The address the app should listen on — usually ":8080" for local dev
 export ADDR = "YOUR_LOCAL_DEV_PORT"
+export DB_ADDR="YOUR_DB_ADDRESS"
