@@ -5,6 +5,8 @@ import (
 
 	"github.com/akhilr007/socials/internal/db"
 	"github.com/akhilr007/socials/internal/env"
+	"github.com/akhilr007/socials/internal/handler"
+	"github.com/akhilr007/socials/internal/service"
 	"github.com/akhilr007/socials/internal/store"
 )
 
@@ -31,9 +33,13 @@ func main() {
 
 	store := store.NewPostgresStorage(db)
 
+	postService := service.NewPostService(store.Posts())
+	postHandler := handler.NewPostHandler(postService)
+
 	app := &application{
-		config: cfg,
-		store:  store,
+		config:      cfg,
+		store:       store,
+		postHandler: postHandler,
 	}
 
 	mux := app.mount()

@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/akhilr007/socials/internal/handler"
 	"github.com/akhilr007/socials/internal/store"
 	"github.com/go-chi/chi/v5"
 )
 
 type application struct {
-	config config
-	store  store.Storage
+	config      config
+	store       store.Storage
+	postHandler *handler.PostHandler
 }
 
 type config struct {
