@@ -32,7 +32,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	var payload CreatePostPayload
 	if err := util.ReadJSON(w, r, &payload); err != nil {
-		util.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		util.BadRequestError(w, r, err)
 		return
 	}
 
@@ -46,12 +46,12 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := h.service.CreatePost(ctx, post); err != nil {
-		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		util.InternalServerError(w, r, err)
 		return
 	}
 
 	if err := util.WriteJSON(w, http.StatusCreated, post); err != nil {
-		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		util.InternalServerError(w, r, err)
 		return
 	}
 }
@@ -60,7 +60,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "postID")
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		util.InternalServerError(w, r, err)
 		return
 	}
 
@@ -70,9 +70,9 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
-			util.WriteJSONError(w, http.StatusNotFound, err.Error())
+			util.NotFoundError(w, r, err)
 		default:
-			util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+			util.InternalServerError(w, r, err)
 		}
 		return
 	}
