@@ -2,8 +2,13 @@ package store
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/akhilr007/socials/internal/repository"
+)
+
+var (
+	ErrNotFound = errors.New("resource not found")
 )
 
 type Storage interface {

@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/akhilr007/socials/internal/model"
 	"github.com/akhilr007/socials/internal/service"
+	"github.com/akhilr007/socials/internal/store"
 	"github.com/akhilr007/socials/internal/util"
+	"github.com/go-chi/chi/v5"
 )
 
 type PostHandler struct {
@@ -47,6 +51,33 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := util.WriteJSON(w, http.StatusCreated, post); err != nil {
+		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "postID")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx := r.Context()
+
+	post, err := h.service.GetByID(ctx, id)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			util.WriteJSONError(w, http.StatusNotFound, err.Error())
+		default:
+			util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	if err := util.WriteJSON(w, http.StatusOK, post); err != nil {
 		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

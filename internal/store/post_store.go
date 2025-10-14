@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/akhilr007/socials/internal/model"
 	"github.com/akhilr007/socials/internal/repository"
@@ -42,4 +43,34 @@ func (p *postRepository) Create(ctx context.Context, post *model.Post) error {
 		return err
 	}
 	return nil
+}
+
+func (p *postRepository) GetByID(ctx context.Context, id int64) (*model.Post, error) {
+	query := `
+		SELECT id, title, content, tags, user_id, created_at, updated_at
+		FROM posts
+		WHERE id = $1
+	`
+
+	var post model.Post
+	err := p.db.QueryRowContext(ctx, query, id).Scan(
+		&post.ID,
+		&post.Title,
+		&post.Content,
+		pq.Array(post.Tags),
+		&post.UserID,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &post, nil
 }

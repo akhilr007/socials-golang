@@ -9,6 +9,7 @@ import (
 
 type PostService interface {
 	CreatePost(ctx context.Context, post *model.Post) error
+	GetByID(ctx context.Context, id int64) (*model.Post, error)
 }
 
 type postService struct {
@@ -23,4 +24,8 @@ func NewPostService(repository repository.PostRepository) PostService {
 
 func (s *postService) CreatePost(ctx context.Context, post *model.Post) error {
 	return s.repository.Create(ctx, post)
+}
+
+func (s *postService) GetByID(ctx context.Context, id int64) (*model.Post, error) {
+	return s.repository.GetByID(ctx, id)
 }
