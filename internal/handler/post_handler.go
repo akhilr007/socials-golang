@@ -23,15 +23,20 @@ func NewPostHandler(s service.PostService) *PostHandler {
 }
 
 type CreatePostPayload struct {
-	Title   string   `json:"title"`
-	Content string   `json:"content"`
-	Tags    []string `json:"tags"`
+	Title   string   `json:"title" validate:"required,max=100"`
+	Content string   `json:"content" validate:"required,max=1000"`
+	Tags    []string `json:"tags" validate:"dive,max=30"`
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	var payload CreatePostPayload
 	if err := util.ReadJSON(w, r, &payload); err != nil {
+		util.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := util.Validate.Struct(payload); err != nil {
 		util.BadRequestError(w, r, err)
 		return
 	}
