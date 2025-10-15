@@ -23,3 +23,10 @@ ifndef STEPS
 	$(error STEPS is required. Usage: make migrate-down STEPS=1)
 endif
 	@migrate -path=$(MIGRATIONS_PATH) -database="$(DB_ADDR)" down $(STEPS)
+
+## Clear dirty state manually (Usage: make migrate-fix VERSION=4)
+migrate-fix:
+ifndef VERSION
+	$(error VERSION is required. Usage: make migrate-fix VERSION=4)
+endif
+	@migrate -path=$(MIGRATIONS_PATH) -database="$(DB_ADDR)" force $(VERSION)
