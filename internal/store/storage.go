@@ -14,12 +14,14 @@ var (
 type Storage interface {
 	Users() repository.UserRepository
 	Posts() repository.PostRepository
+	Comments() repository.CommentRepository
 }
 
 type postgresStorage struct {
-	db             *sql.DB
-	userRepository repository.UserRepository
-	postRepository repository.PostRepository
+	db                *sql.DB
+	userRepository    repository.UserRepository
+	postRepository    repository.PostRepository
+	commentRepository repository.CommentRepository
 }
 
 func NewPostgresStorage(db *sql.DB) Storage {
@@ -40,4 +42,11 @@ func (s *postgresStorage) Posts() repository.PostRepository {
 		s.postRepository = newPostRepositoryPG(s.db)
 	}
 	return s.postRepository
+}
+
+func (s *postgresStorage) Comments() repository.CommentRepository {
+	if s.commentRepository == nil {
+		s.commentRepository = newCommentRepositoryPG(s.db)
+	}
+	return s.commentRepository
 }

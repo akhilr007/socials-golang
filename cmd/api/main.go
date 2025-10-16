@@ -34,7 +34,8 @@ func main() {
 	store := store.NewPostgresStorage(db)
 
 	postService := service.NewPostService(store.Posts())
-	postHandler := handler.NewPostHandler(postService)
+	commentService := service.NewCommentService(store.Comments())
+	postHandler := handler.NewPostHandler(postService, commentService)
 
 	app := &application{
 		config:      cfg,

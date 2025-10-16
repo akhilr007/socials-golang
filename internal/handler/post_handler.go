@@ -13,12 +13,14 @@ import (
 )
 
 type PostHandler struct {
-	service service.PostService
+	postService    service.PostService
+	commentService service.CommentService
 }
 
-func NewPostHandler(s service.PostService) *PostHandler {
+func NewPostHandler(p service.PostService, c service.CommentService) *PostHandler {
 	return &PostHandler{
-		service: s,
+		postService:    p,
+		commentService: c,
 	}
 }
 
@@ -50,7 +52,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 
-	if err := h.service.CreatePost(ctx, post); err != nil {
+	if err := h.postService.CreatePost(ctx, post); err != nil {
 		util.InternalServerError(w, r, err)
 		return
 	}
@@ -71,7 +73,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	post, err := h.service.GetByID(ctx, id)
+	post, err := h.postService.GetByID(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
@@ -81,6 +83,14 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	comments, err := h.commentService.GetPostWithComments(ctx, id)
+	if err != nil {
+		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	post.Comments = comments
 
 	if err := util.WriteJSON(w, http.StatusOK, post); err != nil {
 		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
