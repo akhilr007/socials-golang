@@ -97,3 +97,30 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "postID")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		util.InternalServerError(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	err = h.postService.DeletePost(ctx, id)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			util.NotFoundError(w, r, err)
+		default:
+			util.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	if err := util.WriteJSON(w, http.StatusOK, "deleted successfully"); err != nil {
+		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+}
