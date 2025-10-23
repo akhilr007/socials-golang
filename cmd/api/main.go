@@ -6,6 +6,7 @@ import (
 	"github.com/akhilr007/socials/internal/db"
 	"github.com/akhilr007/socials/internal/env"
 	"github.com/akhilr007/socials/internal/handler"
+	"github.com/akhilr007/socials/internal/middleware"
 	"github.com/akhilr007/socials/internal/service"
 	"github.com/akhilr007/socials/internal/store"
 )
@@ -35,12 +36,18 @@ func main() {
 
 	postService := service.NewPostService(store.Posts())
 	commentService := service.NewCommentService(store.Comments())
+
+	postMiddleware := middleware.NewPostMiddleware(postService)
+
 	postHandler := handler.NewPostHandler(postService, commentService)
 
 	app := &application{
 		config:      cfg,
 		store:       store,
 		postHandler: postHandler,
+		appMiddleware: AppMiddleware{
+			postMiddleware: *postMiddleware,
+		},
 	}
 
 	mux := app.mount()

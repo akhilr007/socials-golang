@@ -6,14 +6,17 @@ import (
 	"time"
 
 	"github.com/akhilr007/socials/internal/handler"
+	appMiddleware "github.com/akhilr007/socials/internal/middleware"
 	"github.com/akhilr007/socials/internal/store"
+
 	"github.com/go-chi/chi/v5"
 )
 
 type application struct {
-	config      config
-	store       store.Storage
-	postHandler *handler.PostHandler
+	config        config
+	store         store.Storage
+	postHandler   *handler.PostHandler
+	appMiddleware AppMiddleware
 }
 
 type config struct {
@@ -27,6 +30,10 @@ type dbConfig struct {
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
+}
+
+type AppMiddleware struct {
+	postMiddleware appMiddleware.PostMiddleware
 }
 
 func (app *application) run(mux *chi.Mux) error {

@@ -94,3 +94,23 @@ func (p *postRepository) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (p *postRepository) Update(ctx context.Context, post *model.Post) error {
+	query := `UPDATE posts SET title=$1, content=$2, updated_at = NOW() WHERE id=$3`
+
+	res, err := p.db.ExecContext(ctx, query, post.Title, post.Content, post.ID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}

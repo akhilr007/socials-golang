@@ -10,4 +10,5 @@ type PostRepository interface {
 	Create(context.Context, *model.Post) error
 	GetByID(context.Context, int64) (*model.Post, error)
 	Delete(context.Context, int64) error
+	Update(context.Context, *model.Post) error
 }
