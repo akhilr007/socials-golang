@@ -64,7 +64,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := util.WriteJSON(w, http.StatusCreated, post); err != nil {
+	if err := util.JsonResponse(w, http.StatusCreated, post); err != nil {
 		util.InternalServerError(w, r, err)
 		return
 	}
@@ -81,7 +81,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 
 	post.Comments = comments
 
-	if err := util.WriteJSON(w, http.StatusOK, post); err != nil {
+	if err := util.JsonResponse(w, http.StatusOK, post); err != nil {
 		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -107,10 +107,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := util.WriteJSON(w, http.StatusOK, "deleted successfully"); err != nil {
-		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +137,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := util.WriteJSON(w, http.StatusOK, post); err != nil {
+	if err := util.JsonResponse(w, http.StatusOK, post); err != nil {
 		util.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
