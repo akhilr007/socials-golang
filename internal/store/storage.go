@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("resource not found")
+	ErrNotFound        = errors.New("resource not found")
+	ErrVersionConflict = errors.New("update version conflict")
 )
 
 type Storage interface {

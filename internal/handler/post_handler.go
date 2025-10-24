@@ -133,8 +133,17 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.postService.UpdatePost(r.Context(), post); err != nil {
-		util.InternalServerError(w, r, err)
-		return
+		switch {
+		case errors.Is(err, store.ErrVersionConflict):
+			http.Error(w, "update conflict — post has been modified by someone else", http.StatusConflict)
+			return
+		case errors.Is(err, store.ErrNotFound):
+			http.Error(w, "post not found", http.StatusNotFound)
+			return
+		default:
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	if err := util.JsonResponse(w, http.StatusOK, post); err != nil {

@@ -47,7 +47,7 @@ func (p *postRepository) Create(ctx context.Context, post *model.Post) error {
 
 func (p *postRepository) GetByID(ctx context.Context, id int64) (*model.Post, error) {
 	query := `
-		SELECT id, title, content, tags, user_id, created_at, updated_at
+		SELECT id, title, content, tags, user_id, created_at, updated_at, version
 		FROM posts
 		WHERE id = $1
 	`
@@ -61,6 +61,7 @@ func (p *postRepository) GetByID(ctx context.Context, id int64) (*model.Post, er
 		&post.UserID,
 		&post.CreatedAt,
 		&post.UpdatedAt,
+		&post.Version,
 	)
 
 	if err != nil {
@@ -96,20 +97,38 @@ func (p *postRepository) Delete(ctx context.Context, id int64) error {
 }
 
 func (p *postRepository) Update(ctx context.Context, post *model.Post) error {
-	query := `UPDATE posts SET title=$1, content=$2, updated_at = NOW() WHERE id=$3`
+	query := `UPDATE posts 
+	SET title=$1, content=$2, version = version + 1, updated_at = NOW() 
+	WHERE id=$3 AND version=$4
+	RETURNING version`
 
-	res, err := p.db.ExecContext(ctx, query, post.Title, post.Content, post.ID)
+	err := p.db.QueryRowContext(
+		ctx,
+		query,
+		post.Title,
+		post.Content,
+		post.ID,
+		post.Version,
+	).Scan(
+		&post.Version,
+	)
+
 	if err != nil {
-		return err
-	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rows == 0 {
-		return ErrNotFound
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			// Check if the post exists at all to distinguish between "not found" and "conflict"
+			var exists bool
+			checkErr := p.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM posts WHERE id=$1)", post.ID).Scan(&exists)
+			if checkErr != nil {
+				return checkErr
+			}
+			if exists {
+				return ErrVersionConflict
+			}
+			return ErrNotFound
+		default:
+			return err
+		}
 	}
 
 	return nil
