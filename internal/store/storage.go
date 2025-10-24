@@ -3,13 +3,15 @@ package store
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/akhilr007/socials/internal/repository"
 )
 
 var (
-	ErrNotFound        = errors.New("resource not found")
-	ErrVersionConflict = errors.New("update version conflict")
+	ErrNotFound          = errors.New("resource not found")
+	ErrVersionConflict   = errors.New("update version conflict")
+	TimeoutQueryDuration = time.Second * 5
 )
 
 type Storage interface {

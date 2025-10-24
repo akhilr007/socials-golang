@@ -25,6 +25,8 @@ func (p *postRepository) Create(ctx context.Context, post *model.Post) error {
 		INSERT INTO posts (content, title, user_id, tags)
 		VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at
 	`
+	ctx, cancel := context.WithTimeout(ctx, TimeoutQueryDuration)
+	defer cancel()
 
 	err := p.db.QueryRowContext(
 		ctx,
@@ -51,6 +53,9 @@ func (p *postRepository) GetByID(ctx context.Context, id int64) (*model.Post, er
 		FROM posts
 		WHERE id = $1
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, TimeoutQueryDuration)
+	defer cancel()
 
 	var post model.Post
 	err := p.db.QueryRowContext(ctx, query, id).Scan(
@@ -79,6 +84,9 @@ func (p *postRepository) GetByID(ctx context.Context, id int64) (*model.Post, er
 func (p *postRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM posts WHERE id = $1`
 
+	ctx, cancel := context.WithTimeout(ctx, TimeoutQueryDuration)
+	defer cancel()
+
 	res, err := p.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
@@ -102,6 +110,9 @@ func (p *postRepository) Update(ctx context.Context, post *model.Post) error {
 	WHERE id=$3 AND version=$4
 	RETURNING version`
 
+	ctx, cancel := context.WithTimeout(ctx, TimeoutQueryDuration)
+	defer cancel()
+
 	err := p.db.QueryRowContext(
 		ctx,
 		query,
@@ -118,6 +129,10 @@ func (p *postRepository) Update(ctx context.Context, post *model.Post) error {
 		case errors.Is(err, sql.ErrNoRows):
 			// Check if the post exists at all to distinguish between "not found" and "conflict"
 			var exists bool
+
+			ctx, cancel := context.WithTimeout(ctx, TimeoutQueryDuration)
+			defer cancel()
+
 			checkErr := p.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM posts WHERE id=$1)", post.ID).Scan(&exists)
 			if checkErr != nil {
 				return checkErr

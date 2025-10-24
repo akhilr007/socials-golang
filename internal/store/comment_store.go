@@ -26,6 +26,9 @@ func (c *commentRepository) GetPostWithComments(ctx context.Context, id int64) (
 		ORDER BY c.created_at DESC;
 	`
 
+	ctx, cancel := context.WithTimeout(ctx, TimeoutQueryDuration)
+	defer cancel()
+
 	rows, err := c.db.QueryContext(ctx, query, id)
 	if err != nil {
 		return nil, err
