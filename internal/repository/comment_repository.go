@@ -8,4 +8,5 @@ import (
 
 type CommentRepository interface {
 	GetPostWithComments(context.Context, int64) ([]model.Comment, error)
+	Create(context.Context, *model.Comment) error
 }
